@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 module.exports.getUsers = (req, res) => {
@@ -22,16 +24,33 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Datos inválidos del usuario' });
-      }
-      return res.status(500).send({ message: 'Error al crear usuario' });
-    });
+  bcrypt.hash(password, 10).then((hash) => {
+    User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    })
+      .then((user) => res.status(201).send({ email: user.email, _id: user._id }))
+      .catch((err) => {
+        if (err.code === 11000) {
+          return res.status(409).send({ message: 'Este correo ya está registrado' });
+        }
+        if (err.name === 'ValidationError') {
+          return res.status(400).send({ message: err.message });
+        }
+        return res.status(500).send({ message: 'Error al crear usuario' });
+      });
+  });
 };
 
 module.exports.updateUser = (req, res) => {
@@ -66,4 +85,28 @@ module.exports.updateAvatar = (req, res) => {
       }
       return res.status(500).send({ message: 'Error al actualizar avatar' });
     });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) return res.status(401).send({ message: 'Correo o contraseña incorrectos' });
+
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) return res.status(401).send({ message: 'Correo o contraseña incorrectos' });
+
+          const token = jwt.sign({ _id: user._id }, 'super-secret-key', { expiresIn: '7d' });
+          return res.send({ token });
+        });
+    })
+    .catch(() => res.status(500).send({ message: 'Error del servidor' }));
+};
+
+module.exports.getCurrentUser = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => res.send(user))
+    .catch(() => res.status(500).send({ message: 'Error del servidor' }));
 };

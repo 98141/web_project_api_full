@@ -5,24 +5,24 @@ const router = express.Router();
 const {
   getUsers,
   getUserById,
-  createUser,
   updateUser,
   updateAvatar,
+  getCurrentUser,
 } = require('../controllers/usersController');
 
 // Obtener todos los usuarios
 router.get('/', getUsers);
 
+// Obtener información del usuario actual
+router.get('/me', getCurrentUser);
+
 // Obtener un usuario por ID
 router.get('/:userId', getUserById);
 
-// Crear nuevo usuario
-router.post('/', createUser);
-
-// Actualizar perfil
+// Actualizar perfil del usuario actual
 router.patch('/me', updateUser);
 
-// Actualizar avatar
+// Actualizar avatar del usuario actual
 router.patch('/me/avatar', updateAvatar);
 
 module.exports = router;

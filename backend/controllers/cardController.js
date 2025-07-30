@@ -71,3 +71,15 @@ module.exports.dislikeCard = (req, res) => {
       return res.status(500).send({ message: 'Error al quitar like' });
     });
 };
+
+module.exports.deleteCard = (req, res) => {
+  Card.findById(req.params.cardId)
+    .orFail()
+    .then((card) => {
+      if (card.owner.toString() !== req.user._id) {
+        return res.status(403).send({ message: 'No autorizado para eliminar esta tarjeta' });
+      }
+      return Card.findByIdAndRemove(req.params.cardId).then(() => res.send({ message: 'Tarjeta eliminada' }));
+    })
+    .catch((err) => res.status(400).send({ message: err.message }));
+};
