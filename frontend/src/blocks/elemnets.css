@@ -1,0 +1,149 @@
+.elements {
+  margin-bottom: 67px;
+  display: grid;
+  grid-template-columns: repeat(3, 282px);
+  grid-template-rows: repeat(2, 361px);
+  column-gap: 17px;
+  row-gap: 20px;
+}
+
+.element {
+  list-style: none;
+  position: relative;
+  background-color: white;
+  width: 282px;
+  height: 361px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.element__img {
+  width: 100%;
+  height: 282px;
+  margin-bottom: 25px;
+}
+
+.element__item {
+  display: flex;
+  justify-content: space-around;
+  width: 246px;
+  margin: auto;
+  align-items: center;
+
+}
+
+.element__item-title {
+  font-family: Inter;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 29.05px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.element__item-heart {
+  border: none;
+  background: url(https://practicum-content.s3.us-west-1.amazonaws.com/web-code/dom/moved_heart.svg)
+    center no-repeat;
+  background-size: 100%;
+  cursor: pointer;
+  height: 22px;
+  width: 22px;
+  right: 10px;
+  transition: 0.3s;
+}
+
+.element__item-heart:hover {
+  transform: scale(1.5);
+}
+
+.element__item-heart_active {
+  opacity: 1;
+  background: url(https://practicum-content.s3.us-west-1.amazonaws.com/web-code/dom/moved_heart-filled.svg)
+    center no-repeat;
+}
+
+.element__delete {
+  border: 0;
+  position: absolute;
+  background: rgba(0, 0, 0, 0);
+  padding: 10px 15px 0 235px;
+}
+
+.element__delete:hover {
+  transform: scale(1.5);
+}
+
+/*popup*/
+.popup {
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  display: none;
+}
+
+.imagen-popup {
+  max-width: 80%;
+  max-height: 80%;
+}
+
+.imagen .activa {
+  opacity: 0.3;
+}
+
+.popup__paragraph {
+  color: white;
+  padding-top: 10px;
+  width: 291px;
+  height: 12px;
+  font-family: Inter;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14.52px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+}
+
+.popup__close {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 30px;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 50%;
+  z-index: 10;
+}
+
+.popup__close:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .elements {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+
+}
+
+@media screen and (min-width: 320px) and (max-width: 767px) {
+  .elements {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}

@@ -1,0 +1,28 @@
+.pages {
+  background-color: rgb(12, 12, 12);
+  width: 880px;
+  margin: auto;
+}
+
+body {
+  background-color: black;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+@media screen and (min-width: 768px) and  (max-width:1023px) {
+  .pages {
+    width: 650px;
+  }
+}
+
+@media screen and (min-width: 320px) and  (max-width:767px) {
+  .pages {
+    width: 320px;
+    margin: auto;
+  }
+
+}

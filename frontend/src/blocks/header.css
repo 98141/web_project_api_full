@@ -1,0 +1,92 @@
+.header {
+  margin-top: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  padding: 0 40px;
+}
+
+.header__vector {
+  width: 173px;
+  height: 33px;
+}
+
+.header__line {
+  height: 1px;
+  background-color: #ccc;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.header__auth {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header__email {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.header__logout {
+  background-color: transparent;
+  border: none;
+  color: red;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.header__link {
+  color: #ffffff;
+  font-family: Inter, sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 22px;
+  text-align: right;
+  text-decoration: none;
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .header {
+    padding: 0 20px;
+  }
+
+  .header__vector {
+    width: 173px;
+    height: 33px;
+  }
+
+  .header__line {
+    width: 650px;
+  }
+}
+
+@media screen and (min-width: 320px) and (max-width: 767px) {
+  .header {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header__vector {
+    width: 126px;
+    height: 24px;
+  }
+
+  .header__auth {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+  }
+
+  .header__link,
+  .header__logout,
+  .header__email {
+    font-size: 12px;
+  }
+
+  .header__line {
+    width: 320px;
+  }
+}
