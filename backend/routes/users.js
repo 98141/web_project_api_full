@@ -1,7 +1,4 @@
 const express = require('express');
-
-const router = express.Router();
-
 const {
   getUsers,
   getUserById,
@@ -10,19 +7,18 @@ const {
   getCurrentUser,
 } = require('../controllers/usersController');
 
-// Obtener todos los usuarios
+const {
+  validateUserId,
+  validateUpdateUser,
+  validateUpdateAvatar,
+} = require('../middleware/validation');
+
+const router = express.Router();
+
 router.get('/', getUsers);
-
-// Obtener información del usuario actual
 router.get('/me', getCurrentUser);
-
-// Obtener un usuario por ID
-router.get('/:userId', getUserById);
-
-// Actualizar perfil del usuario actual
-router.patch('/me', updateUser);
-
-// Actualizar avatar del usuario actual
-router.patch('/me/avatar', updateAvatar);
+router.get('/:userId', validateUserId, getUserById);
+router.patch('/me', validateUpdateUser, updateUser);
+router.patch('/me/avatar', validateUpdateAvatar, updateAvatar);
 
 module.exports = router;

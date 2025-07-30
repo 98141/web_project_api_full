@@ -1,85 +1,92 @@
 const Card = require('../models/card');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send(cards))
-    .catch(() => res.status(500).send({ message: 'Error al obtener tarjetas' }));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Datos inválidos al crear la tarjeta' });
+        const validationError = new Error('Datos inválidos al crear la tarjeta');
+        validationError.statusCode = 400;
+        return next(validationError);
       }
-      return res.status(500).send({ message: 'Error al crear tarjeta' });
+      return next(err);
     });
 };
 
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .orFail()
-    .then((card) => res.send(card))
+module.exports.deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
+    .orFail(() => {
+      const notFoundError = new Error('Tarjeta no encontrada');
+      notFoundError.statusCode = 404;
+      throw notFoundError;
+    })
+    .then((card) => {
+      if (card.owner.toString() !== req.user._id) {
+        const forbiddenError = new Error('No autorizado para eliminar esta tarjeta');
+        forbiddenError.statusCode = 403;
+        throw forbiddenError;
+      }
+      return Card.findByIdAndRemove(req.params.cardId)
+        .then(() => res.send({ message: 'Tarjeta eliminada' }));
+    })
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Tarjeta no encontrada' });
-      }
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'ID de tarjeta no válido' });
+        const castError = new Error('ID de tarjeta no válido');
+        castError.statusCode = 400;
+        return next(castError);
       }
-      return res.status(500).send({ message: 'Error al eliminar tarjeta' });
+      return next(err);
     });
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail()
+    .orFail(() => {
+      const notFoundError = new Error('Tarjeta no encontrada para dar like');
+      notFoundError.statusCode = 404;
+      throw notFoundError;
+    })
     .then((card) => res.send(card))
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Tarjeta no encontrada para dar like' });
-      }
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'ID de tarjeta no válido' });
+        const castError = new Error('ID de tarjeta no válido');
+        castError.statusCode = 400;
+        return next(castError);
       }
-      return res.status(500).send({ message: 'Error al dar like' });
+      return next(err);
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail()
+    .orFail(() => {
+      const notFoundError = new Error('Tarjeta no encontrada para quitar like');
+      notFoundError.statusCode = 404;
+      throw notFoundError;
+    })
     .then((card) => res.send(card))
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Tarjeta no encontrada para quitar like' });
-      }
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'ID de tarjeta no válido' });
+        const castError = new Error('ID de tarjeta no válido');
+        castError.statusCode = 400;
+        return next(castError);
       }
-      return res.status(500).send({ message: 'Error al quitar like' });
+      return next(err);
     });
-};
-
-module.exports.deleteCard = (req, res) => {
-  Card.findById(req.params.cardId)
-    .orFail()
-    .then((card) => {
-      if (card.owner.toString() !== req.user._id) {
-        return res.status(403).send({ message: 'No autorizado para eliminar esta tarjeta' });
-      }
-      return Card.findByIdAndRemove(req.params.cardId).then(() => res.send({ message: 'Tarjeta eliminada' }));
-    })
-    .catch((err) => res.status(400).send({ message: err.message }));
 };

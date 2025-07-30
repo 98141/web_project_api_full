@@ -2,28 +2,31 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => res.status(500).send({ message: 'Error al obtener usuarios' }));
+    .catch(next);
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
-    .orFail()
+    .orFail(() => {
+      const err = new Error('Usuario no encontrado');
+      err.statusCode = 404;
+      throw err;
+    })
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Usuario no encontrado' });
-      }
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'ID de usuario no válido' });
+        const customError = new Error('ID de usuario no válido');
+        customError.statusCode = 400;
+        return next(customError);
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+      return next(err);
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name,
     about,
@@ -32,28 +35,31 @@ module.exports.createUser = (req, res) => {
     password,
   } = req.body;
 
-  bcrypt.hash(password, 10).then((hash) => {
-    User.create({
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
       name,
       about,
       avatar,
       email,
       password: hash,
-    })
-      .then((user) => res.status(201).send({ email: user.email, _id: user._id }))
-      .catch((err) => {
-        if (err.code === 11000) {
-          return res.status(409).send({ message: 'Este correo ya está registrado' });
-        }
-        if (err.name === 'ValidationError') {
-          return res.status(400).send({ message: err.message });
-        }
-        return res.status(500).send({ message: 'Error al crear usuario' });
-      });
-  });
+    }))
+    .then((user) => res.status(201).send({ email: user.email, _id: user._id }))
+    .catch((err) => {
+      if (err.code === 11000) {
+        const duplicateError = new Error('Este correo ya está registrado');
+        duplicateError.statusCode = 409;
+        return next(duplicateError);
+      }
+      if (err.name === 'ValidationError') {
+        const validationError = new Error(err.message);
+        validationError.statusCode = 400;
+        return next(validationError);
+      }
+      return next(err);
+    });
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(
@@ -64,13 +70,15 @@ module.exports.updateUser = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Datos inválidos para actualización' });
+        const validationError = new Error('Datos inválidos para actualización');
+        validationError.statusCode = 400;
+        return next(validationError);
       }
-      return res.status(500).send({ message: 'Error al actualizar perfil' });
+      return next(err);
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(
@@ -81,32 +89,42 @@ module.exports.updateAvatar = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Avatar no válido' });
+        const validationError = new Error('Avatar no válido');
+        validationError.statusCode = 400;
+        return next(validationError);
       }
-      return res.status(500).send({ message: 'Error al actualizar avatar' });
+      return next(err);
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   User.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) return res.status(401).send({ message: 'Correo o contraseña incorrectos' });
+      if (!user) {
+        const authError = new Error('Correo o contraseña incorrectos');
+        authError.statusCode = 401;
+        throw authError;
+      }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
-          if (!matched) return res.status(401).send({ message: 'Correo o contraseña incorrectos' });
+          if (!matched) {
+            const authError = new Error('Correo o contraseña incorrectos');
+            authError.statusCode = 401;
+            throw authError;
+          }
 
           const token = jwt.sign({ _id: user._id }, 'super-secret-key', { expiresIn: '7d' });
           return res.send({ token });
         });
     })
-    .catch(() => res.status(500).send({ message: 'Error del servidor' }));
+    .catch(next);
 };
 
-module.exports.getCurrentUser = (req, res) => {
+module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => res.send(user))
-    .catch(() => res.status(500).send({ message: 'Error del servidor' }));
+    .catch(next);
 };
