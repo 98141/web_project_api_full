@@ -1,38 +1,43 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
-const urlRegex = /^https?:\/\/(www\.)?[\w\-._~:/?#[\]@!$&'()*+,;=]+#?$/;
+const urlValidator = (v) => validator.isURL(v, { protocols: ['http', 'https'], require_protocol: true });
 
-const cardSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    minlength: 2,
-    maxlength: 30,
-  },
-  link: {
-    type: String,
-    required: true,
-    validate: {
-      validator(v) {
-        return urlRegex.test(v);
-      },
-      message: 'El enlace debe ser una URL válida',
+const cardSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      minlength: 2,
+      maxlength: 30,
+      trim: true,
     },
+    link: {
+      type: String,
+      required: true,
+      validate: {
+        validator: urlValidator,
+        message: 'El enlace debe ser una URL válida (http/https)',
+      },
+    },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User',
+      index: true,
+    },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: [],
+      },
+    ],
   },
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'user',
-  },
-  likes: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
-    default: [],
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true },
+);
 
-module.exports = mongoose.model('card', cardSchema);
+// Índices útiles
+cardSchema.index({ createdAt: -1 });
+
+module.exports = mongoose.model('Card', cardSchema);

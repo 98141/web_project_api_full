@@ -14,6 +14,7 @@ const {
 
 const router = express.Router();
 
+// Todas estas rutas deben estar protegidas por tu middleware auth a nivel app o index router
 router.get('/', getCards);
 router.post('/', validateCreateCard, createCard);
 router.delete('/:cardId', validateCardId, deleteCard);

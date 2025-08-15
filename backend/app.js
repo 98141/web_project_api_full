@@ -1,51 +1,73 @@
+// app.js
 const express = require('express');
 const mongoose = require('mongoose');
-
-const { createUser, login } = require('./controllers/usersController');
-const auth = require('./middleware/auth');
-const errorHandler = require('./middleware/errorHandler');
-const { requestLogger, errorLogger } = require('./middleware/logger');
+const helmet = require('helmet');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
 const {
-  validateCreateUser,
-  validateLogin,
-} = require('./middleware/validation');
+  PORT, MONGO_URI, CORS_ORIGINS, NODE_ENV,
+} = require('./config');
+const { requestLogger, errorLogger } = require('./middleware/logger');
+const { celebrateErrors } = require('./middleware/validation');
+const errorHandler = require('./middleware/errorHandler');
+const auth = require('./middleware/auth');
 
-const usersRouter = require('./routes/users');
-const cardsRouter = require('./routes/cards');
+const routes = require('./routes'); // index.js
 
 const app = express();
-const { PORT = 3000 } = process.env;
 
-mongoose.connect('mongodb://localhost:27017/aroundb');
+// Seguridad básica
+app.use(helmet());
+
+// CORS (permite varias origins)
+app.use(
+  cors({
+    origin(origin, callback) {
+      // permitir herramientas como Postman (sin origin) y orígenes configurados
+      if (!origin || CORS_ORIGINS.includes(origin)) return callback(null, true);
+      return callback(new Error('CORS no permitido para este origin'));
+    },
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 
-// Logger para solicitudes (antes de rutas)
+// Logger de solicitudes
 app.use(requestLogger);
 
-// rutas públicas con validación
-app.post('/signup', validateCreateUser, createUser);
-app.post('/signin', validateLogin, login);
+// Limitar fuerza bruta en signin (y opcional en signup)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/signin', authLimiter);
+app.use('/signup', authLimiter);
 
-// Middleware para proteger rutas
+// Conexión DB
+mongoose.set('strictQuery', true);
+mongoose
+  .connect(MONGO_URI)
+  .then(() => console.log('✅ MongoDB conectado'))
+  .catch((e) => console.error('❌ Error conectando a MongoDB', e.message));
+
+// Rutas públicas
+app.use(routes);
+
 app.use(auth);
 
-// rutas protegidas
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
-
-// Ruta no existente
 app.use((req, res) => {
   res.status(404).send({ message: 'Recurso solicitado no encontrado' });
 });
 
-// Logger para errores (antes del manejo de errores)
+// Logger de errores y manejadores
 app.use(errorLogger);
-
-// Middleware centralizado de errores
+app.use(celebrateErrors);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`🚀 Servidor en http://localhost:${PORT} [${NODE_ENV}]`);
 });

@@ -1,4 +1,4 @@
-const { celebrate, Joi } = require('celebrate');
+const { celebrate, Joi, Segments, errors } = require('celebrate');
 const validator = require('validator');
 
 // Validador personalizado para URLs
@@ -7,6 +7,13 @@ const validateURL = (value, helpers) => {
     return value;
   }
   return helpers.error('string.uri');
+};
+
+const urlCustom = (value, helpers) => {
+  if (!validator.isURL(value, { protocols: ['http', 'https'], require_protocol: true })) {
+    return helpers.message('URL inválida (requiere http/https)');
+  }
+  return value;
 };
 
 // VALIDACIONES PARA USUARIOS
@@ -47,16 +54,16 @@ const validateUpdateAvatar = celebrate({
 });
 
 // VALIDACIONES PARA TARJETAS
-const validateCardId = celebrate({
-  params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24),
+const validateCreateCard = celebrate({
+  [Segments.BODY]: Joi.object({
+    name: Joi.string().min(2).max(30).required(),
+    link: Joi.string().custom(urlCustom).required(),
   }),
 });
 
-const validateCreateCard = celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().custom(validateURL),
+const validateCardId = celebrate({
+  [Segments.PARAMS]: Joi.object({
+    cardId: Joi.string().hex().length(24).required(),
   }),
 });
 
@@ -68,4 +75,5 @@ module.exports = {
   validateUpdateAvatar,
   validateCardId,
   validateCreateCard,
+  celebrateErrors: errors(),
 };
