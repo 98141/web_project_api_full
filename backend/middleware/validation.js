@@ -1,4 +1,6 @@
-const { celebrate, Joi, Segments, errors } = require('celebrate');
+const {
+  celebrate, Joi, Segments, errors,
+} = require('celebrate');
 const validator = require('validator');
 
 // Validador personalizado para URLs

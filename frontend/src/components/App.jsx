@@ -31,7 +31,7 @@ function App() {
         .checkToken(token)
         .then((res) => {
           setLoggedIn(true);
-          setCurrentUser({ email: res.data.email }); // backend devuelve solo email
+          setCurrentUser({ email: res.email }); // backend devuelve solo email
           navigate("/", { replace: true });
         })
         .catch((err) => {
@@ -51,7 +51,7 @@ function App() {
         return auth.checkToken(res.token);
       })
       .then((data) => {
-        setCurrentUser({ email: data.data.email });
+        setCurrentUser({ email: data.email });
         navigate("/", { replace: true });
       })
       .catch((err) => {

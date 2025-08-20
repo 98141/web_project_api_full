@@ -1,5 +1,8 @@
 import Avatar from "../../../images/Avatar.png";
+import EditAvat from "../../../images/edit_avatar.png";
+import ButtonEdit from "../../../images/EditButton.png";
 import { useState, useEffect, useContext } from "react";
+
 
 import NewCard from "../form/NewCard/NewCard";
 import EditProfile from "../form/EditProfile/EditProfile";
@@ -98,7 +101,7 @@ function Main() {
             onClick={() => handleOpenPopup(editAvatar)}
           >
             <img
-              src="../images/edit_avatar.png"
+              src={EditAvat}
               alt="Botón para editar Avatar"
             />
           </button>
@@ -110,7 +113,7 @@ function Main() {
             </h1>
             <a href="#" onClick={() => handleOpenPopup(editProfile)}>
               <img
-                src="../images/EditButton.png"
+                src={ButtonEdit}
                 alt="Imagen de un botón de editar"
                 className="profile__info-button"
               />

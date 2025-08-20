@@ -6,7 +6,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 
 const {
-  PORT, MONGO_URI, CORS_ORIGINS, NODE_ENV,
+  PORT, MONGO_URI, NODE_ENV,
 } = require('./config');
 const { requestLogger, errorLogger } = require('./middleware/logger');
 const { celebrateErrors } = require('./middleware/validation');
@@ -23,12 +23,10 @@ app.use(helmet());
 // CORS (permite varias origins)
 app.use(
   cors({
-    origin(origin, callback) {
-      // permitir herramientas como Postman (sin origin) y orígenes configurados
-      if (!origin || CORS_ORIGINS.includes(origin)) return callback(null, true);
-      return callback(new Error('CORS no permitido para este origin'));
-    },
-    credentials: true,
+    origin: [
+      'http://localhost:3000',
+      'https://tripletefull.mooo.com',
+    ],
   }),
 );
 

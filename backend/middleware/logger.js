@@ -1,4 +1,4 @@
-const { createLogger, transports, format } = require('winston');
+const { transports, format } = require('winston');
 const expressWinston = require('express-winston');
 
 // Logger para solicitudes

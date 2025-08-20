@@ -1,4 +1,10 @@
-# 🌐 API Backend — Usuarios & Cards
+# Link despliegue
+
+<https://tripletefull.front.jumpingcrab.com/>
+
+---
+
+## 🌐 API Backend — Usuarios & Cards
 
 Backend desarrollado en **Node.js + Express + MongoDB** con autenticación JWT, validaciones robustas, seguridad básica y manejo centralizado de errores.  
 Incluye endpoints para gestión de **usuarios** y **tarjetas** (cards) con paginación, likes y control de permisos.

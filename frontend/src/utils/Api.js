@@ -7,7 +7,7 @@ class Api {
   // 1. Cargar la información del usuario desde el servidor
   getUserInfo() {
     return fetch(this.baseUrl + "/users/me", {
-      headers: this.headers,
+      headers: {...this.headers, authorization: 'Bearer ' + localStorage.getItem('jwt')},
     })
       .then((res) => {
         if (!res.ok) {
@@ -23,7 +23,7 @@ class Api {
   // 2. Cargar las tarjetas desde el servidor(Obtener tarjetas iniciales)
   getInitialCards() {
     return fetch(this.baseUrl + "/cards", {
-      headers: this.headers,
+      headers: {...this.headers, authorization: 'Bearer ' + localStorage.getItem('jwt')},
     })
       .then((res) => {
         if (!res.ok) {
@@ -40,7 +40,7 @@ class Api {
 updateUserProfile({ name, about }) {
   return fetch(this.baseUrl + "/users/me", {
     method: "PATCH",
-    headers: this.headers,
+    headers: {...this.headers, authorization: 'Bearer ' + localStorage.getItem('jwt')},
     body: JSON.stringify({ name, about }),
   })
   .then((res) => {
@@ -55,7 +55,7 @@ updateUserProfile({ name, about }) {
 addNewCard({ name, link }) {
   return fetch(this.baseUrl + "/cards", {
     method: "POST",
-    headers: this.headers,
+    headers: {...this.headers, authorization: 'Bearer ' + localStorage.getItem('jwt')},
     body: JSON.stringify({ name, link }),
   })
     .then((res) => {
@@ -78,7 +78,7 @@ addNewCard({ name, link }) {
   toggleLike(cardId, isLiked) {
     return fetch(`${this.baseUrl}/cards/${cardId}/likes`, {
       method: isLiked ? "DELETE" : "PUT",
-      headers: this.headers,
+      headers: {...this.headers, authorization: 'Bearer ' + localStorage.getItem('jwt')},
     })
       .then((res) => {
         if (!res.ok) {
@@ -96,7 +96,7 @@ addNewCard({ name, link }) {
   updateUserAvatar(avatarUrl) {
     return fetch(this.baseUrl + "/users/me/avatar", {
       method: "PATCH",
-      headers: this.headers,
+      headers: {...this.headers, authorization: 'Bearer ' + localStorage.getItem('jwt')},
       body: JSON.stringify({ avatar: avatarUrl }),
     })
       .then((res) => {
@@ -114,7 +114,7 @@ addNewCard({ name, link }) {
   removeCard(cardId) {
     return fetch(`${this.baseUrl}/cards/${cardId}`, {
       method: "DELETE",
-      headers: this.headers,
+      headers: {...this.headers, authorization: 'Bearer ' + localStorage.getItem('jwt')},
     }).then((res) => {
       if (!res.ok) {
         return Promise.reject(`Error: ${res.status}`);

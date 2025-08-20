@@ -1,4 +1,4 @@
-const BASE_URL = "https://se-register-api.en.tripleten-services.com/v1";
+const BASE_URL = "https://tripletefull.mooo.com";
 
 export const register = ({ email, password }) => {
   return fetch(`${BASE_URL}/signup`, {

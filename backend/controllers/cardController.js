@@ -3,28 +3,14 @@ const Card = require('../models/card');
 
 exports.getCards = async (req, res, next) => {
   try {
-    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
-    const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 100);
-    const sort = req.query.sort || '-createdAt';
-
-    const [items, total] = await Promise.all([
+    const [items] = await Promise.all([
       Card.find({})
-        .sort(sort)
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .populate('owner', 'name avatar _id')
-        // Si quieres también los datos de quiénes dieron like, descomenta:
-        // .populate('likes', 'name avatar _id')
-        .lean(),
-      Card.countDocuments({}),
+        .populate('owner', 'name avatar _id'),
     ]);
 
-    res.send({
-      total,
-      page,
-      limit,
+    res.send(
       items,
-    });
+    );
   } catch (err) {
     next(err);
   }
